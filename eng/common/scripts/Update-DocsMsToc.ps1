@@ -29,6 +29,11 @@ depending on the requirements for the domain
 .PARAMETER OutputLocation
 Output location for unified reference yml file
 
+.PARAMETER ReadmeFolderRoot
+The readme folder root path. E.g. docs-ref-services in Java, JS, Python, api/overview/azure
+
+.PARAMETER PackageSourceOverride
+The package source override is the devops public feeds which each language published their SDK to.
 #>
 
 param(
@@ -36,7 +41,10 @@ param(
   [string] $DocRepoLocation,
 
   [Parameter(Mandatory = $true)]
-  [string] $OutputLocation
+  [string] $OutputLocation,
+
+  [Parameter(Mandatory = $false)]
+  [string] $ReadmeFolderRoot = 'docs-ref-services'
 )
 . $PSScriptRoot/common.ps1
 . $PSScriptRoot/Helpers/PSModule-Helpers.ps1
@@ -208,7 +216,7 @@ foreach ($service in $serviceNameList) {
   $serviceReadmeBaseName = $service.ToLower().Replace(' ', '-').Replace('/', '-')
   $serviceTocEntry = [PSCustomObject]@{
     name            = $service;
-    href            = "~/docs-ref-services/{moniker}/$serviceReadmeBaseName.md"
+    href            = "~/$ReadmeFolderRoot/{moniker}/$serviceReadmeBaseName.md"
     landingPageType = 'Service'
     items           = @($packageItems)
   }
@@ -248,7 +256,7 @@ if ($otherPackages) {
           break
         }
 
-        if ($matchingNode) {
+        if ($matchingNode -and ($matchingNode[0].PSObject.Members.Name -contains "items")) {
           $currentNode = $matchingNode[0].items
         }
         else {
